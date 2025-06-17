@@ -6,8 +6,6 @@ public class PlayerMovement : MonoBehaviour
 {
     public Rigidbody2D rb;
     public Transform playerSprite;
-    public Animator playerAnimator;  // Animator for player animations
-    //bool isFacingRight = true; // Need if player have face direction
 
     [Header("Movement Settings")]
     public float moveSpeed = 8f;
@@ -52,7 +50,6 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        playerAnimator = playerSprite.GetComponent<Animator>();
     }
 
     void Update()
@@ -73,13 +70,6 @@ public class PlayerMovement : MonoBehaviour
             //Flip(); // Uncomment if you want to flip the player sprite based on movement direction
         }
 
-
-        if (playerAnimator != null)
-        {
-            playerSprite.GetComponent<SpriteRenderer>().enabled = false;
-            playerAnimator.SetFloat("velocity-y", rb.linearVelocityY);
-            playerAnimator.SetFloat("magnitude", rb.linearVelocity.magnitude);
-        }
 
     }
 
@@ -151,13 +141,13 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, jumpForce);
                 jumpRemaining--; // Decrease the jump counter
-                playerAnimator.SetTrigger("jump");
+               
             }
             else if (contxt.canceled) // light tap = lower jump height
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, rb.linearVelocityY * 0.5f);
                 jumpRemaining--; // Decrease the jump counter
-                playerAnimator.SetTrigger("jump");
+              
             }
         }
 
@@ -168,7 +158,7 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = new Vector2(wallJumpPower.x * wallJumpDirection, wallJumpPower.y);
             // Jump away from the wall
             wallJumpTimer = 0; // Reset the wall jump timer
-            playerAnimator.SetTrigger("jump");
+            
 
             ////Force flip the player sprite to face away from the wall
             //if (transform.localScale.x != wallJumpDirection)
@@ -199,14 +189,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void UpdateAnimation()
-    {
-        if (playerAnimator != null)
-        {
-            // Ensure the sprite always maintains the same rotation  
-            playerSprite.rotation = Quaternion.identity;
-        }
-    }
+   
     private void UpdateGroundCheckPos()
     {
         // Set the groundCheck position to the bottom of the playerSprite
