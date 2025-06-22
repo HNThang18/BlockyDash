@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class playerMovement : MonoBehaviour
 {
     private Rigidbody2D rb; 
-    private float Move;
+    private Vector2 moveInput;
     public float speed;
     public float jumpForce = 10f; // Force applied when jumping
     public string coinTag = "Coin";
@@ -11,6 +12,31 @@ public class playerMovement : MonoBehaviour
     public LayerMask groundLayer; // Layer that represents the ground
     public Transform groundCheck; // Empty GameObject to check if player is grounded
     public float groundCheckRadius = 0.2f; // Radius of the ground check circle
+    
+    // Input System references
+    private PlayerInput playerInput;
+    private InputAction moveAction;
+    private InputAction jumpAction;
+
+    private void Awake()
+    {
+        // Get reference to PlayerInput component
+        playerInput = GetComponent<PlayerInput>();
+        
+        if (playerInput != null)
+        {
+            // Set up action references
+            moveAction = playerInput.actions["Move"];
+            jumpAction = playerInput.actions["Jump"];
+            
+            // Set up callback for jump
+            jumpAction.performed += OnJump;
+        }
+        else
+        {
+            Debug.LogError("PlayerInput component not found. Please add a PlayerInput component to the player GameObject.");
+        }
+    }
 
     void Start()
     {
@@ -19,15 +45,25 @@ public class playerMovement : MonoBehaviour
     
     void Update() 
     {
-        // Horizontal movement
-        Move = Input.GetAxisRaw("Horizontal");
-        rb.linearVelocity = new Vector2(Move * speed, rb.linearVelocity.y);
-        
         // Check if player is grounded
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+    }
+    
+    private void FixedUpdate()
+    {
+        // Get movement input from Input System
+        Vector2 input = moveAction.ReadValue<Vector2>();
         
-        // Jump when Space or Jump button is pressed and player is grounded
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Jump")) && isGrounded)
+        // Only use the horizontal component for 2D movement
+        moveInput.x = input.x;
+        
+        // Apply movement to rigidbody
+        rb.linearVelocity = new Vector2(moveInput.x * speed, rb.linearVelocity.y);
+    }
+      private void OnJump(InputAction.CallbackContext context)
+    {
+        // Only jump if grounded
+        if (isGrounded)
         {
             Jump();
         }
@@ -53,6 +89,29 @@ public class playerMovement : MonoBehaviour
             
             // Destroy the collected coin
             //Destroy(other.gameObject);
+        }
+    }
+    
+    private void OnEnable()
+    {
+        // Enable actions when script is enabled
+        if (playerInput != null)
+        {
+            moveAction.Enable();
+            jumpAction.Enable();
+        }
+    }
+    
+    private void OnDisable()
+    {
+        // Disable actions when script is disabled
+        if (playerInput != null)
+        {
+            moveAction.Disable();
+            jumpAction.Disable();
+            
+            // Unsubscribe from jump event
+            jumpAction.performed -= OnJump;
         }
     }
 }
