@@ -1,3 +1,4 @@
+﻿using System.Collections;
 using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -5,7 +6,11 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public Rigidbody2D rb;
-    public Transform playerSprite;
+    private BoxCollider2D playerCollider;
+    bool isFacingRight = true;
+    public Animator animator;
+    public ParticleSystem smokeFX;
+
 
     [Header("Movement Settings")]
     public float moveSpeed = 8f;
@@ -42,14 +47,17 @@ public class PlayerMovement : MonoBehaviour
     // Wall Jumping Variables
     bool isWallJumping; // Variable to track if the player is wall jumping
     float wallJumpDirection; // Direction of the wall jump
-    float wallJumpTime = 0.5f; // Time since the last wall jump
+    float wallJumpTime = 0.2f; // Time since the last wall jump
     float wallJumpTimer; // Timer for wall jump cooldown
     public Vector2 wallJumpPower = new Vector2(5f, 10f); // Power of the wall jump
                                                          // y - jump force, x - horizontal force
 
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        playerCollider = GetComponent<BoxCollider2D>();
     }
 
     void Update()
@@ -63,20 +71,51 @@ public class PlayerMovement : MonoBehaviour
         ProcessWallJumping(); // Handle wall jumping logic
 
 
-        // Uncomment the following line if you want to flip the player sprite based on movement direction
         if (!isWallJumping)
         {
             rb.linearVelocity = new Vector2(horizontalMovement * moveSpeed, rb.linearVelocityY);
-            //Flip(); // Uncomment if you want to flip the player sprite based on movement direction
+            Flip();
         }
 
-
+        animator.SetFloat("yVelocity", rb.linearVelocityY);
+        animator.SetFloat("magnitube", rb.linearVelocity.magnitude);
+        animator.SetBool("isWallSliding", isWallSliding);
     }
 
+    private void GroundCheck()
+    {
+        // Check if the ground check area overlaps with the ground layer
+        if (Physics2D.OverlapBox(grndCheckPos.position, grndCheckSize, 0f, groundLayer))
+        {
+            isGrounded = true; // Set grounded state to true
+            jumpRemaining = maxJumps; // Reset the jump counter when grounded
+        }
+        else
+        {
+            isGrounded = false; // Set grounded state to false
+        }
+    }
     private bool WallCheck()
     {
         return Physics2D.OverlapBox(wallCheckPos1.position, wallCheckSize1, 0f, wallLayer1)
             || Physics2D.OverlapBox(wallCheckPos2.position, wallCheckSize2, 0f, wallLayer2);
+    }
+
+    private void Flip()
+    {
+        if (isFacingRight && horizontalMovement < 0
+        || !isFacingRight && horizontalMovement > 0)
+        {
+            isFacingRight = !isFacingRight;
+            Vector3 ls = transform.localScale;
+            ls.x *= -1f;
+            transform.localScale = ls;
+
+            if (rb.linearVelocityY == 0f)
+            {
+                smokeFX.Play();
+            }
+        }
     }
     private void ProcessWallSlide()
     {
@@ -84,8 +123,8 @@ public class PlayerMovement : MonoBehaviour
         {
             isWallSliding = true;
             rb.linearVelocity = new Vector2(rb.linearVelocityX,
-                Mathf.Max(rb.linearVelocityY, -wallSlideSpeed));
-            // Cap fall speed while wall sliding
+                Mathf.Max(rb.linearVelocityY, -wallSlideSpeed)
+            ); // Cap fall speed while wall sliding
         }
         else
         {
@@ -134,98 +173,69 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext contxt)
     {
-        //Check if the jump is performed and player is grounded
         if (jumpRemaining > 0)
         {
             if (contxt.performed) // hold down = full height jump
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, jumpForce);
                 jumpRemaining--; // Decrease the jump counter
-               
+                JumpFX();
             }
             else if (contxt.canceled) // light tap = lower jump height
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, rb.linearVelocityY * 0.5f);
                 jumpRemaining--; // Decrease the jump counter
-              
+                JumpFX();
             }
         }
 
         //wall jumping
-        if (contxt.performed && wallJumpTimer > 0)
+        if (contxt.performed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            rb.linearVelocity = new Vector2(wallJumpPower.x * wallJumpDirection, wallJumpPower.y);
-            // Jump away from the wall
+            rb.linearVelocity = new Vector2(wallJumpPower.x * wallJumpDirection,
+                                            wallJumpPower.y); // Jump away from the wall
             wallJumpTimer = 0; // Reset the wall jump timer
-            
+            JumpFX();
 
-            ////Force flip the player sprite to face away from the wall
-            //if (transform.localScale.x != wallJumpDirection)
-            //{
-            //    isFacingRight = !isFacingRight;
-            //    Vector3 ls = transform.localScale;
-            //    ls.x *= -1; // Flip the sprite by inverting the x scale
-            //    transform.localScale = ls;
-            //}
+
+            // Force flip
+            if (transform.localScale.x != wallJumpDirection)
+            {
+                if (isFacingRight && horizontalMovement < 0
+       || !isFacingRight && horizontalMovement > 0)
+                {
+                    isFacingRight = !isFacingRight;
+                    Vector3 ls = transform.localScale;
+                    ls.x *= -1f;
+                    transform.localScale = ls;
+                }
+            }
 
             Invoke(nameof(CancelWallJumping), wallJumpTime + 0.1f);
-            // Wall jump cooldown; Wall jump = 0.5f -- Jump again = 0.6f
+            // Wall jump cooldown; Wall jump duration = 0.5f -- Jump again after 0.6f
         }
 
     }
 
-    private void GroundCheck()
+    private void JumpFX()
     {
-        // Check if the ground check area overlaps with the ground layer
-        if (Physics2D.OverlapBox(grndCheckPos.position, grndCheckSize, 0f, groundLayer))
-        {
-            jumpRemaining = maxJumps; // Reset the jump counter when grounded
-            isGrounded = true; // Set grounded state to true
-        }
-        else
-        {
-            isGrounded = false; // Set grounded state to false
-        }
+        animator.SetTrigger("jump");
+        smokeFX.Play();
     }
 
-   
+
     private void UpdateGroundCheckPos()
     {
-        // Set the groundCheck position to the bottom of the playerSprite
-        grndCheckPos.position =
-            new Vector3(playerSprite.position.x,
-                        playerSprite.position.y - (playerSprite.localScale.y / 2),
-                        playerSprite.position.z);
+        float offsetY = playerCollider.size.y * transform.lossyScale.y / 2f;
+        grndCheckPos.position = transform.position + Vector3.down * offsetY;
     }
     private void UpdateWallCheckPos()
     {
-        wallCheckPos1.position =
-             new Vector3(playerSprite.position.x + (playerSprite.localScale.x / 2),
-                        playerSprite.position.y,
-                        playerSprite.position.z);
-        wallCheckPos2.position =
-            new Vector3(playerSprite.position.x - (playerSprite.localScale.x / 2),
-                        playerSprite.position.y,
-                        playerSprite.position.z);
+        float offsetX = playerCollider.size.x * transform.lossyScale.x / 2f;
+        wallCheckPos1.position = transform.position + Vector3.right * offsetX;
+        wallCheckPos2.position = transform.position + Vector3.left * offsetX;
     }
-
-    //private void Flip()
-    //{
-    //    if(isFacingRight && horizontalMovement < 0) // moving left while facing right
-    //    {
-    //        isFacingRight = !isFacingRight;
-    //        Vector3 ls = transform.localScale;
-    //        ls.x *= -1; // Flip the sprite by inverting the x scale
-    //        transform.localScale = ls;
-    //    }
-    //    else if(!isFacingRight && horizontalMovement > 0) // moving right while facing left
-    //    {
-    //        isFacingRight = true;
-    //        playerSprite.localScale = new Vector3(-playerSprite.localScale.x, playerSprite.localScale.y, playerSprite.localScale.z);
-    //    }
-    //}
-
 
     private void OnDrawGizmosSelected()
     {
