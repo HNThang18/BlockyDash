@@ -42,13 +42,14 @@ public class GrapplingHook : MonoBehaviour
         if (Input.GetMouseButtonDown(0) && !isHooked)
         {
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 direction = (mousePos - (Vector2)transform.position).normalized;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, maxDistance, hookableMask);
+            Vector2 hookStartPos = GetHookStartPosition();
+            Vector2 direction = (mousePos - hookStartPos).normalized;
+            RaycastHit2D hit = Physics2D.Raycast(hookStartPos, direction, maxDistance, hookableMask);
             if (hit.collider != null)
             {
                 isHooked = true;
                 hookPoint = hit.point;
-                currentDistance = Vector2.Distance(transform.position, hookPoint);
+                currentDistance = Vector2.Distance(hookStartPos, hookPoint);
                 CreateRope(hit.collider.gameObject);
                 lineRenderer.enabled = true;
                 UpdateLineRenderer();
@@ -62,7 +63,7 @@ public class GrapplingHook : MonoBehaviour
             UpdateLineRenderer();
 
             // Apply a small force towards the hook point
-            Vector2 pullDirection = (hookPoint - (Vector2)transform.position).normalized;
+            Vector2 pullDirection = (hookPoint - GetHookStartPosition()).normalized;
             rb.AddForce(pullDirection * pullForce);
 
             // Shorten the rope by removing segments
@@ -72,7 +73,7 @@ public class GrapplingHook : MonoBehaviour
             {
                 RemoveRopeSegment();
                 timeSinceLastShorten = 0f;
-                currentDistance = Vector2.Distance(transform.position, hookPoint);
+                currentDistance = Vector2.Distance(GetHookStartPosition(), hookPoint);
                 Debug.Log($"Segment removed! Segments: {ropeSegments.Count}, Distance: {currentDistance}");
             }
 
@@ -84,7 +85,7 @@ public class GrapplingHook : MonoBehaviour
                 lineRenderer.enabled = false;
 
                 // Launch the player away from the hook point
-                Vector2 launchDirection = ((Vector2)transform.position - hookPoint).normalized;
+                Vector2 launchDirection = (GetHookStartPosition() - hookPoint).normalized;
                 rb.AddForce(launchDirection * launchImpulse, ForceMode2D.Impulse);
                 Debug.Log("Hook released! Launch applied.");
             }
@@ -103,8 +104,9 @@ public class GrapplingHook : MonoBehaviour
         ropeSegments.Clear();
 
         int segmentCount = Mathf.CeilToInt(currentDistance / segmentLength);
-        Vector2 direction = (hookPoint - (Vector2)transform.position).normalized;
-        Vector2 currentPos = transform.position;
+        Vector2 hookStartPos = GetHookStartPosition();
+        Vector2 direction = (hookPoint - hookStartPos).normalized;
+        Vector2 currentPos = hookStartPos;
 
         // Create segments from player to hook point
         for (int i = 0; i < segmentCount; i++)
@@ -135,7 +137,6 @@ public class GrapplingHook : MonoBehaviour
 
         // Connect last segment to hook point (static anchor)
         GameObject anchor = new GameObject("HookAnchor");
-        //anchor.GetComponent<Rigidbody>().position = hookStartPos;
         anchor.transform.position = hookPoint;
         Rigidbody2D anchorRb = anchor.AddComponent<Rigidbody2D>();
         anchorRb.bodyType = RigidbodyType2D.Static;
@@ -168,7 +169,7 @@ public class GrapplingHook : MonoBehaviour
     void UpdateLineRenderer()
     {
         lineRenderer.positionCount = ropeSegments.Count + 1;
-        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(0, GetHookStartPosition());
         for (int i = 0; i < ropeSegments.Count; i++)
         {
             lineRenderer.SetPosition(i + 1, ropeSegments[i].transform.position);
