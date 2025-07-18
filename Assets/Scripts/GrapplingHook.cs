@@ -6,12 +6,12 @@ public class GrapplingHook : MonoBehaviour
     public LineRenderer lineRenderer;
     public LayerMask hookableMask;
     public GameObject ropeSegmentPrefab; // Prefab with Rigidbody2D and HingeJoint2D
-    public float maxDistance = 3f;
+    public float maxDistance = 5f;
     public float pullSpeed = 20f;
     public float launchImpulse = 3f; // Strength of the launch effect
     public float segmentLength = 0.5f; // Length of each rope segment
     public float segmentMass = 0.1f; // Reduced mass for less resistance
-    public float pullForce = 20f; // Additional force to enhance pulling
+    public float pullForce = 60f; // Additional force to enhance pulling
 
     private bool isHooked = false;
     private Vector2 hookPoint;
