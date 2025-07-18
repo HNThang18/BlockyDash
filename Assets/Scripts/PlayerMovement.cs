@@ -11,6 +11,9 @@ public class PlayerMovement : MonoBehaviour
     public Animator animator;
     public ParticleSystem smokeFX;
 
+    // Reference to GrapplingHook component
+    private GrapplingHook grapplingHook;
+
 
     [Header("Movement Settings")]
     public float moveSpeed = 8f;
@@ -23,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ground Check")]
     public Transform grndCheckPos;
-    public Vector2 grndCheckSize = new Vector2(.5f, .05f);
+    public Vector2 grndCheckSize = new Vector2(0.5f, 0.05f);
     public LayerMask groundLayer;
     bool isGrounded; // Variable to track if the player is grounded
 
@@ -36,9 +39,6 @@ public class PlayerMovement : MonoBehaviour
     public Transform wallCheckPos1;
     public Vector2 wallCheckSize1 = new Vector2(.5f, .05f);
     public LayerMask wallLayer1;
-    public Transform wallCheckPos2; // Additional wall check position for wall sliding
-    public Vector2 wallCheckSize2 = new Vector2(.5f, .05f);
-    public LayerMask wallLayer2;
 
     [Header("WallMovement")]
     public float wallSlideSpeed = 1;
@@ -58,14 +58,14 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<BoxCollider2D>();
+
+        // Get reference to GrapplingHook component
+        grapplingHook = GetComponent<GrapplingHook>();
     }
 
     void Update()
     {
         GroundCheck(); // Check if the player is grounded
-        UpdateGroundCheckPos(); // Update the ground check position based on the player sprite
-        UpdateWallCheckPos();
-
         ProcessGravity(); // Apply gravity based on the player's state
         ProcessWallSlide(); // Check for wall sliding conditions
         ProcessWallJumping(); // Handle wall jumping logic
@@ -80,6 +80,11 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("yVelocity", rb.linearVelocityY);
         animator.SetFloat("magnitube", rb.linearVelocity.magnitude);
         animator.SetBool("isWallSliding", isWallSliding);
+        // Check if player is hooked using GrapplingHook component
+        if (grapplingHook != null)
+        {
+            animator.SetBool("isHooked", grapplingHook.IsHooked);
+        }
     }
 
     private void GroundCheck()
@@ -97,8 +102,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private bool WallCheck()
     {
-        return Physics2D.OverlapBox(wallCheckPos1.position, wallCheckSize1, 0f, wallLayer1)
-            || Physics2D.OverlapBox(wallCheckPos2.position, wallCheckSize2, 0f, wallLayer2);
+        return Physics2D.OverlapBox(wallCheckPos1.position, wallCheckSize1, 0f, wallLayer1);
     }
 
     private void Flip()
@@ -224,19 +228,6 @@ public class PlayerMovement : MonoBehaviour
         smokeFX.Play();
     }
 
-
-    private void UpdateGroundCheckPos()
-    {
-        float offsetY = playerCollider.size.y * transform.lossyScale.y / 2f;
-        grndCheckPos.position = transform.position + Vector3.down * offsetY;
-    }
-    private void UpdateWallCheckPos()
-    {
-        float offsetX = playerCollider.size.x * transform.lossyScale.x / 2f;
-        wallCheckPos1.position = transform.position + Vector3.right * offsetX;
-        wallCheckPos2.position = transform.position + Vector3.left * offsetX;
-    }
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -244,8 +235,6 @@ public class PlayerMovement : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(wallCheckPos1.position, wallCheckSize1);
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(wallCheckPos2.position, wallCheckSize2);
     }
 
 }
