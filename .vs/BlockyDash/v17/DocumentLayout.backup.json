@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\assets\\script\\coinmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|solutionrelative:assets\\script\\coinmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|d:\\chuyennghanh7\\pru212\\groupproject\\branch_map\\blockydash\\assets\\scripts\\playermovement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\playermovement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\assets\\scripts\\grapplinghook.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\grapplinghook.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\assets\\script\\movement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{89CB8092-80C4-76BC-A91C-351F8F65976C}|Assembly-CSharp.csproj|solutionrelative:assets\\script\\movement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CoinManager.cs",
+              "DocumentMoniker": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Script\\CoinManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Script\\CoinManager.cs",
+              "ToolTip": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Script\\CoinManager.cs",
+              "RelativeToolTip": "Assets\\Script\\CoinManager.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAYwDQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-19T01:40:55.157Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GrapplingHook.cs",
+              "DocumentMoniker": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Scripts\\GrapplingHook.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\GrapplingHook.cs",
+              "ToolTip": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Scripts\\GrapplingHook.cs",
+              "RelativeToolTip": "Assets\\Scripts\\GrapplingHook.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAA1wCUAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-19T01:32:14.536Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PlayerMovement.cs",
+              "DocumentMoniker": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Scripts\\PlayerMovement.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\PlayerMovement.cs",
+              "ToolTip": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Scripts\\PlayerMovement.cs",
+              "RelativeToolTip": "Assets\\Scripts\\PlayerMovement.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAYwGQAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-18T18:27:04.715Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Movement.cs",
+              "DocumentMoniker": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Script\\Movement.cs",
+              "RelativeDocumentMoniker": "Assets\\Script\\Movement.cs",
+              "ToolTip": "D:\\ChuyenNghanh7\\PRU212\\GroupProject\\Branch_map\\BlockyDash\\Assets\\Script\\Movement.cs",
+              "RelativeToolTip": "Assets\\Script\\Movement.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAAAowFQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-18T04:09:19.159Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
