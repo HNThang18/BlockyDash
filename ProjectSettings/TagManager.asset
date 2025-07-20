@@ -18,7 +18,7 @@ TagManager:
   - Collision
   - 
   - Grapple
-  - 
+  - Effects
   - 
   - 
   - 
@@ -41,11 +41,11 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Default
-    uniqueID: 0
-    locked: 0
   - name: BackGround
     uniqueID: 3582439835
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   - name: Ground
     uniqueID: 2301552473
@@ -61,6 +61,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 1963362387
+    locked: 0
+  - name: UI
+    uniqueID: 1817368043
     locked: 0
   m_RenderingLayers:
   - Default

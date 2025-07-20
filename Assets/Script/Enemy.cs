@@ -15,8 +15,10 @@ public class Enemy : MonoBehaviour
     public Transform pointB;
     [Tooltip("Distance threshold to consider reaching a patrol point")]
     public float reachThreshold = 0.1f;
-    [Tooltip("If no patrol points are set, patrol left/right from start position by this distance")]
-    public float defaultPatrolDistance = 3f;
+    
+    [Header("Legacy Movement (unused with patrol points)")]
+    public bool moveRight = false;
+    public Transform groundDetection;
     public float groundDetectionDistance = 0.5f;
     public float edgeDetectionDistance = 0.5f;
     public LayerMask groundLayer;
@@ -34,6 +36,9 @@ public class Enemy : MonoBehaviour
     private Transform currentTarget;
     private bool movingToB = true; // true = moving to point B, false = moving to point A
     private float colliderEdgeOffset; // Offset from center to edge of box collider
+
+    // Enemy Damage
+    public int damage = 1;
     
     void Start()
     {
@@ -41,6 +46,7 @@ public class Enemy : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
+        
         // Calculate the edge offset based on the box collider size
         if (boxCollider != null)
         {
@@ -50,24 +56,35 @@ public class Enemy : MonoBehaviour
         {
             colliderEdgeOffset = 0.5f; // Default fallback value
         }
-        // If patrol points are not set, create them at runtime for left/right patrol
-        if (pointA == null || pointB == null)
+          // Initialize patrol system
+        if (pointA != null && pointB != null)
         {
-            Vector3 left = transform.position + Vector3.left * defaultPatrolDistance;
-            Vector3 right = transform.position + Vector3.right * defaultPatrolDistance;
-            GameObject a = new GameObject($"{gameObject.name}_AutoPatrolA");
-            a.transform.position = left;
-            a.transform.parent = null; // Make sure patrol point stays in world space
-            pointA = a.transform;
-            GameObject b = new GameObject($"{gameObject.name}_AutoPatrolB");
-            b.transform.position = right;
-            b.transform.parent = null; // Make sure patrol point stays in world space
-            pointB = b.transform;
+            // Start by moving toward point B
+            currentTarget = pointB;
+            movingToB = true;
+            
+            // Face the correct direction initially
+            UpdateSpriteDirection();
+            
+            // Warn if ground detection isn't set up for patrol system
+            if (groundDetection == null)
+            {
+                Debug.LogWarning($"Enemy {gameObject.name}: Ground Detection not assigned! Enemy may fall off platforms during patrol.");
+            }
         }
-        // Start by moving toward point B
-        currentTarget = pointB;
-        movingToB = true;
-        UpdateSpriteDirection();
+        else
+        {
+            Debug.LogWarning($"Enemy {gameObject.name}: Patrol points not assigned! Using legacy movement.");
+            // Fallback to legacy movement system
+            if (moveRight)
+            {
+                spriteRenderer.flipX = false;
+            }
+            else
+            {
+                spriteRenderer.flipX = true;
+            }
+        }
     }
     
     void Update()
@@ -79,8 +96,15 @@ public class Enemy : MonoBehaviour
     }
       void Patrol()
     {
-        // Always use patrol points now
-        PatrolBetweenPoints();
+        // Use patrol points if available, otherwise use legacy system
+        if (pointA != null && pointB != null && currentTarget != null)
+        {
+            PatrolBetweenPoints();
+        }
+        else
+        {
+            LegacyPatrol();
+        }
     }
     
     void PatrolBetweenPoints()
@@ -92,43 +116,71 @@ public class Enemy : MonoBehaviour
         bool canMove = true;
         bool shouldBounce = false;
         
-        // Calculate edge detection position based on box collider size and movement direction
-        float edgeCheckX = direction.x > 0 ? colliderEdgeOffset : -colliderEdgeOffset;
-        Vector2 edgePos = new Vector2(transform.position.x + edgeCheckX, transform.position.y);
-        
-        // Use the bottom of the box collider for ground check
-        float raycastOriginY = boxCollider != null ? transform.position.y - boxCollider.size.y * transform.localScale.y / 2 + 0.1f : transform.position.y - 0.5f;
-        Vector2 checkPosition = new Vector2(edgePos.x + (direction.x * 0.1f), raycastOriginY);
-        
-        // Check for ground ahead
-        bool hasGroundAhead = Physics2D.Raycast(
-            checkPosition, 
-            Vector2.down, 
-            groundDetectionDistance,
-            groundLayer);
-        
-        if (!hasGroundAhead)
+        // Ground/edge detection
+        if (groundDetection != null)
         {
-            canMove = false;
-            shouldBounce = true;
+            // Calculate edge detection position based on box collider size and movement direction
+            float edgeCheckX = direction.x > 0 ? colliderEdgeOffset : -colliderEdgeOffset;
+            Vector2 edgePos = new Vector2(transform.position.x + edgeCheckX, transform.position.y);
+            
+            // If ground detection transform exists, use its height, otherwise use bottom of collider
+            float raycastOriginY;
+            if (groundDetection != null)
+            {
+                raycastOriginY = groundDetection.position.y;
+            }
+            else if (boxCollider != null)
+            {
+                // Use the bottom of the box collider
+                raycastOriginY = transform.position.y - boxCollider.size.y * transform.localScale.y / 2 + 0.1f;
+            }
+            else
+            {
+                raycastOriginY = transform.position.y - 0.5f;
+            }
+            
+            // Create the check position at the edge of the collider in the direction of movement
+            Vector2 checkPosition = new Vector2(edgePos.x + (direction.x * 0.1f), raycastOriginY);
+            
+            // Check for ground ahead
+            bool hasGroundAhead = Physics2D.Raycast(
+                checkPosition, 
+                Vector2.down, 
+                groundDetectionDistance,
+                groundLayer);
+            
+            // Debug.DrawRay(checkPosition, Vector2.down * groundDetectionDistance, hasGroundAhead ? Color.green : Color.red);
+                
+            if (!hasGroundAhead)
+            {
+                canMove = false;
+                shouldBounce = true;
+                Debug.Log($"{gameObject.name}: No ground ahead, bouncing!");
+            }
         }
         
         // Wall detection from the edge of the collider
+        Vector2 wallCheckOrigin = new Vector2(
+            transform.position.x + (direction.x > 0 ? colliderEdgeOffset : -colliderEdgeOffset),
+            transform.position.y);
+            
         bool hitWall = Physics2D.Raycast(
-            edgePos, 
+            wallCheckOrigin, 
             new Vector2(direction.x, 0), 
             edgeDetectionDistance, 
             groundLayer);
-        
+            
         if (hitWall)
         {
             canMove = false;
             shouldBounce = true;
+            Debug.Log($"{gameObject.name}: Hit wall, bouncing!");
         }
         
         // If we hit an obstacle, bounce (switch target immediately)
         if (shouldBounce)
         {
+            // Switch target immediately when hitting wall or edge
             if (movingToB)
             {
                 currentTarget = pointA;
@@ -140,6 +192,7 @@ public class Enemy : MonoBehaviour
                 movingToB = true;
             }
             
+            // Update sprite direction for new target
             UpdateSpriteDirection();
             
             // Recalculate direction after bouncing
@@ -191,6 +244,60 @@ public class Enemy : MonoBehaviour
         
         // Flip sprite accordingly (assuming sprite faces right by default)
         spriteRenderer.flipX = !movingRight;
+    }
+    
+    void LegacyPatrol()
+    {
+        // Original patrol logic for backward compatibility
+        Vector2 movement = new Vector2(moveRight ? moveSpeed : -moveSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = movement;
+        
+        // Calculate edge offset based on facing direction
+        float edgeCheckX = moveRight ? colliderEdgeOffset : -colliderEdgeOffset;
+        Vector2 edgePos = new Vector2(transform.position.x + edgeCheckX, transform.position.y);
+        
+        // Check for wall or edge to change direction
+        bool hitWall = Physics2D.Raycast(
+            edgePos, 
+            moveRight ? Vector2.right : Vector2.left, 
+            edgeDetectionDistance, 
+            groundLayer);
+            
+        bool reachedEdge = false;
+        if (groundDetection != null)
+        {
+            // Create edge check position
+            Vector2 checkPosition;
+            
+            if (groundDetection != null)
+            {
+                // Adjust the ground check position based on movement direction and collider width
+                checkPosition = new Vector2(
+                    transform.position.x + edgeCheckX + (moveRight ? 0.1f : -0.1f), 
+                    groundDetection.position.y);
+            }
+            else
+            {
+                // Fallback if no groundDetection point is set
+                float raycastOriginY = transform.position.y - (boxCollider != null ? boxCollider.size.y / 2 : 0.5f);
+                checkPosition = new Vector2(
+                    transform.position.x + edgeCheckX + (moveRight ? 0.1f : -0.1f), 
+                    raycastOriginY);
+            }
+            
+            reachedEdge = !Physics2D.Raycast(
+                checkPosition, 
+                Vector2.down, 
+                groundDetectionDistance,
+                groundLayer);
+        }
+            
+        if (hitWall || reachedEdge)
+        {
+            // Change direction
+            moveRight = !moveRight;
+            spriteRenderer.flipX = !spriteRenderer.flipX;
+        }
     }
       void Die()
     {
@@ -305,28 +412,6 @@ public class Enemy : MonoBehaviour
                 // Example: PlayerManager.Instance.TakeDamage();
             }
         }
-        // Change direction if colliding with another enemy (only if hit on the side we're moving toward)
-        else if (collision.gameObject.CompareTag("Enemy"))
-        {
-            // Get direction to other enemy
-            Vector2 toOther = collision.transform.position - transform.position;
-            float moveDir = (currentTarget.position - transform.position).x;
-            // Only turn if the other enemy is in the direction we're moving
-            if (Mathf.Sign(toOther.x) == Mathf.Sign(moveDir) && Mathf.Abs(toOther.x) > 0.01f)
-            {
-                if (movingToB)
-                {
-                    currentTarget = pointA;
-                    movingToB = false;
-                }
-                else
-                {
-                    currentTarget = pointB;
-                    movingToB = true;
-                }
-                UpdateSpriteDirection();
-            }
-        }
     }// For debugging: visualize the patrol points and path
     void OnDrawGizmos()
     {
@@ -335,8 +420,10 @@ public class Enemy : MonoBehaviour
         {
             boxCollider = GetComponent<BoxCollider2D>();
         }
+        
         // Calculate the edge offset for gizmos
         float gizmoEdgeOffset = boxCollider != null ? boxCollider.size.x / 2 * transform.localScale.x : 0.5f;
+        
         // Draw patrol points and path
         if (pointA != null && pointB != null)
         {
@@ -344,36 +431,97 @@ public class Enemy : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(pointA.position, 0.3f);
             Gizmos.DrawWireSphere(pointB.position, 0.3f);
+            
             // Draw patrol path
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(pointA.position, pointB.position);
+            
             // Draw current target
             if (currentTarget != null)
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawWireSphere(currentTarget.position, 0.2f);
+                
                 // Draw line to current target
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawLine(transform.position, currentTarget.position);
+                
                 // Calculate direction for drawing edge detection gizmos
                 Vector2 direction = (currentTarget.position - transform.position).normalized;
+                
                 // Draw edge detection based on box collider size
                 float edgeCheckX = direction.x > 0 ? gizmoEdgeOffset : -gizmoEdgeOffset;
                 Vector2 edgePos = new Vector2(transform.position.x + edgeCheckX, transform.position.y);
-                // Use the bottom of the box collider for ground detection raycast
-                float raycastOriginY = boxCollider != null ? transform.position.y - boxCollider.size.y * transform.localScale.y / 2 + 0.1f : transform.position.y - 0.5f;
+                
+                // Determine the Y position for ground detection raycast
+                float raycastOriginY;
+                if (groundDetection != null)
+                {
+                    raycastOriginY = groundDetection.position.y;
+                }
+                else if (boxCollider != null)
+                {
+                    raycastOriginY = transform.position.y - boxCollider.size.y * transform.localScale.y / 2 + 0.1f;
+                }
+                else
+                {
+                    raycastOriginY = transform.position.y - 0.5f;
+                }
+                
+                // Create the check position at the edge of the collider in the direction of movement
                 Vector2 checkPosition = new Vector2(edgePos.x + (direction.x * 0.1f), raycastOriginY);
+                
                 // Draw ground detection ray
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawLine(checkPosition, checkPosition + Vector2.down * groundDetectionDistance);
+                
                 // Draw wall detection ray
                 Gizmos.color = Color.orange;
                 Gizmos.DrawLine(edgePos, edgePos + (new Vector2(direction.x, 0) * edgeDetectionDistance));
             }
+            
             // Draw reach threshold
             Gizmos.color = Color.white;
             Gizmos.DrawWireSphere(transform.position, reachThreshold);
         }
+        else
+        {
+            // Legacy gizmos for edge detection
+            // Calculate edge offset based on facing direction for legacy patrol
+            float edgeCheckX = moveRight ? gizmoEdgeOffset : -gizmoEdgeOffset;
+            Vector2 edgePos = new Vector2(transform.position.x + edgeCheckX, transform.position.y);
+            
+            if (groundDetection != null)
+            {
+                // Draw ground detection ray
+                Gizmos.color = Color.red;
+                
+                // Create edge check position
+                Vector2 checkPosition = new Vector2(
+                    transform.position.x + edgeCheckX + (moveRight ? 0.1f : -0.1f), 
+                    groundDetection.position.y);
+                    
+                Gizmos.DrawLine(checkPosition, checkPosition + Vector2.down * groundDetectionDistance);
+            }
+            else if (boxCollider != null)
+            {
+                // Draw a fallback ray if there's no groundDetection point
+                Gizmos.color = Color.red;
+                float raycastOriginY = transform.position.y - boxCollider.size.y * transform.localScale.y / 2 + 0.1f;
+                
+                Vector2 checkPosition = new Vector2(
+                    transform.position.x + edgeCheckX + (moveRight ? 0.1f : -0.1f), 
+                    raycastOriginY);
+                
+                Gizmos.DrawLine(checkPosition, checkPosition + Vector2.down * groundDetectionDistance);
+            }
+            
+            // Wall detection ray
+            Gizmos.color = Color.blue;
+            Vector3 direction = moveRight ? Vector3.right : Vector3.left;
+            Gizmos.DrawLine(edgePos, edgePos + (Vector2)direction * edgeDetectionDistance);
+        }
+        
         // Draw the box collider for reference
         if (boxCollider != null)
         {
