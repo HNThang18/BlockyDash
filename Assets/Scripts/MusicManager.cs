@@ -46,4 +46,8 @@ public class MusicManager : MonoBehaviour
             yield return null;
         }
     }
+    public void ToggleMusic()
+    {
+        musicSource.mute = !musicSource.mute;
+    }
 }

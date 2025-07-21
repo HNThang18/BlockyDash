@@ -46,4 +46,12 @@ public class StartMenuController : MonoBehaviour
         musicVolumeSlider.value = PlayerPrefs.GetFloat("MusicVolume");
         sfxVolumeSlider.value = PlayerPrefs.GetFloat("SFXVolume");
     }
+    public void ToggleMusic()
+    {
+        MusicManager.Instance.ToggleMusic();
+    }
+    public void ToggleSound()
+    {
+        SoundManager.Instance.ToggleSound();
+    }
 }

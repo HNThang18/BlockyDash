@@ -7,6 +7,7 @@ public class CoinManager : MonoBehaviour
     public static CoinManager instance; // Singleton pattern for easy access
     
     public int coinCount = 0;
+    public int totalCoins = 0;
     public TextMeshProUGUI coinText; // Changed to TextMeshProUGUI for TMP support
     
     void Awake()
@@ -21,7 +22,12 @@ public class CoinManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        totalCoins = GameObject.FindGameObjectsWithTag("Coin").Length;
         UpdateCoinText();
+    }
+    public int GetTotalCoins()
+    {
+        return totalCoins;
     }
 
     // Update is called once per frame
@@ -47,6 +53,6 @@ public class CoinManager : MonoBehaviour
     void UpdateCoinText()
     {
         if (coinText != null)
-            coinText.text = "Coins: " + coinCount.ToString();
+            coinText.text = "Coins: " + coinCount.ToString() + " / " + totalCoins.ToString();
     }
 }

@@ -32,8 +32,8 @@ public class GameOverManage : MonoBehaviour
     {
         coinCount = coinManager.GetCoinCount();
         gameOverScr.SetActive(true);
-        cointCollected.text = "COIN COLLECT: " + coinCount;
-
+        cointCollected.text = "COIN COLLECT: " + coinCount + " / " + coinManager.GetTotalCoins();
+        SoundManager.Instance.PlaySound2D("Death");
         Time.timeScale = 0f;
     }
 

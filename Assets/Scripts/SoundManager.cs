@@ -35,4 +35,8 @@ public class SoundManager : MonoBehaviour
     {
         sfx2DSource.PlayOneShot(sfxLibrary.GetClipFromName(soundName));
     }
+    public void ToggleSound()
+    {
+        sfx2DSource.mute = !sfx2DSource.mute;
+    }
 }

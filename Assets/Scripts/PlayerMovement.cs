@@ -125,6 +125,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Touch coin:" + other.gameObject + " - " + other.gameObject.name);
             // Destroy the collected coin
             Destroy(other.gameObject);
+            SoundManager.Instance.PlaySound3D("Coin", transform.position);
         }
     }
 
@@ -282,6 +283,7 @@ public class PlayerMovement : MonoBehaviour
                     grapplingHook.IsHooked = false; // Release hook
                 }
                 PerformJump(true); // Full-height jump
+                SoundManager.Instance.PlaySound2D("Jump");
 
             }
             else if (contxt.canceled) // light tap = lower jump height
@@ -291,6 +293,7 @@ public class PlayerMovement : MonoBehaviour
                     grapplingHook.IsHooked = false; // Release hook
                 }
                 PerformJump(false); // Short jump
+                SoundManager.Instance.PlaySound2D("Jump");
 
             }
         }
@@ -303,6 +306,7 @@ public class PlayerMovement : MonoBehaviour
                                             wallJumpPower.y); // Jump away from the wall
             wallJumpTimer = 0; // Reset the wall jump timer
             JumpFX();
+            SoundManager.Instance.PlaySound2D("Jump");
 
 
             // Force flip
