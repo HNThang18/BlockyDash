@@ -23,15 +23,5 @@ public class LevelMenu : MonoBehaviour
         LevelManager.Instance.LoadScene(levelName, "CrossFade");
         MusicManager.Instance.PlayMusic("InGame");
     }
-
-    // unlock a level
-    void UnlockLevel()
-    {
-        if(SceneManager.GetActiveScene().buildIndex >= PlayerPrefs.GetInt("ReachedIndex"))
-        {
-            PlayerPrefs.SetInt("ReachedIndex", SceneManager.GetActiveScene().buildIndex + 1);
-            PlayerPrefs.SetInt("UnlockedLevels", PlayerPrefs.GetInt("UnlockedLevels", 1) + 1);
-            PlayerPrefs.Save();
-        }
-    }
+    
 }
