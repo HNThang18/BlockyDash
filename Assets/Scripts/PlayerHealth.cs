@@ -32,6 +32,19 @@ public class PlayerHealth : MonoBehaviour
             TakeDamage(enemy.damage);
         }
 
+        //if (thornTilemap != null)
+        //{
+        //    Vector3 hitPosition = collision.ClosestPoint(transform.position); // Vị trí gần nhất va chạm
+        //    Vector3Int cellPosition = thornTilemap.WorldToCell(hitPosition);
+        //    TileBase tile = thornTilemap.GetTile(cellPosition);
+
+        //    if (tile != null) // Nếu có tile tại vị trí va chạm, coi là thorn
+        //    {
+        //        TakeDamage(1); // Mất 1 máu khi chạm thorn
+        //    }
+        //}
+
+        // Kiểm tra va chạm với Thorn Tilemap
         if (thornTilemap != null)
         {
             Vector3 hitPosition = collision.ClosestPoint(transform.position); // Vị trí gần nhất va chạm
@@ -40,12 +53,23 @@ public class PlayerHealth : MonoBehaviour
 
             if (tile != null) // Nếu có tile tại vị trí va chạm, coi là thorn
             {
-                TakeDamage(1); // Mất 1 máu khi chạm thorn
+                Debug.Log("Thorn Tag Void?: " + thornTilemap.gameObject.CompareTag("Void"));
+                // Kiểm tra tag của Tilemap
+                if (thornTilemap.gameObject.CompareTag("Void"))
+                {
+                    TakeDamage(3); // Mất 3 máu nếu tag là "Void"
+                    Debug.Log("Hit Thorn Tilemap with tag 'Void', taking 3 damage!");
+                }
+                else
+                {
+                    TakeDamage(1); // Mất 1 máu nếu tag không phải "Void"
+                    Debug.Log("Hit Thorn Tilemap, taking 1 damage!");
+                }
             }
         }
     }
 
-    private void TakeDamage(int damage)
+    public void TakeDamage(int damage)
     {
         currentHealth -= damage;
         healthUI.UpdateHeart(currentHealth);

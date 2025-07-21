@@ -39,6 +39,8 @@ public class Enemy : MonoBehaviour
 
     // Enemy Damage
     public int damage = 1;
+
+    public PlayerHealth playerHealth;
     
     void Start()
     {
@@ -410,6 +412,7 @@ public class Enemy : MonoBehaviour
                 // Player touched enemy from the side or below - implement player damage here
                 Debug.Log($"Player hit enemy from the side/below. Player velocity: {playerRb.linearVelocity}");
                 // Example: PlayerManager.Instance.TakeDamage();
+                playerHealth.TakeDamage(damage);
             }
         }
     }// For debugging: visualize the patrol points and path
